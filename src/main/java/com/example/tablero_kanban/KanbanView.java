@@ -43,11 +43,25 @@ public class KanbanView extends VerticalLayout {
         columnaEnProgreso = new VerticalLayout();
         columnaHecho = new VerticalLayout();
 
+        columnaPorHacer.getStyle().set("background-color", "#f4f5f7");
+        columnaEnProgreso.getStyle().set("background-color", "#f4f5f7");
+        columnaHecho.getStyle().set("background-color", "#f4f5f7");
+
+        columnaPorHacer.setMinWidth("300px");
+        columnaEnProgreso.setMinWidth("300px");
+        columnaHecho.setMinWidth("300px");
+
+        columnaPorHacer.setWidth(null);
+        columnaEnProgreso.setWidth(null);
+        columnaHecho.setWidth(null);
+
         HorizontalLayout tableroLayout = new HorizontalLayout();
         tableroLayout.add(columnaPorHacer, columnaEnProgreso, columnaHecho);
         tableroLayout.setWidthFull();
         
         tableroLayout.getStyle().set("flex-wrap", "wrap");
+
+        tableroLayout.setFlexGrow(1, columnaPorHacer, columnaEnProgreso, columnaHecho);
 
         add(filtroPrioridad, tableroLayout);
     

@@ -31,7 +31,7 @@ public class GestorArchivos {
                     out.println("1|Estudiar Fisica|Repasar informes del laboratorio|" + LocalDate.now().plusDays(2)
                             + "|Alta|Por hacer|1");
                     out.println("2|Programar Vaadin|Hacer el proyecto final de lógica|" + LocalDate.now().minusDays(1)
-                            + "|Meida|En progreso|1");
+                            + "|Media|En progreso|1");
                     out.println("3|Comprar comida|Para ver peliculas|" + LocalDate.now() + "|Baja|Hecho|2");
                 }
             }
