@@ -75,4 +75,32 @@ public class GestorArchivos {
             System.out.println("Error al guardar tareas: " + e.getMessage());
         }
     }
+
+    public static List<Proyecto> leerProyectos() {
+        List<Proyecto> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(archivoProyectos))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] datos = linea.split("\\|");
+
+                Proyecto p = new Proyecto();
+                p.id = Integer.parseInt(datos[0]);
+                p.nombre = datos[1];
+                lista.add(p);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al leer proyectos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public static void guardarProyectos(List<Proyecto> listaProyectos) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(archivoProyectos)))) {
+            for (Proyecto p : listaProyectos) {
+                out.println(p.id + "|" + p.nombre);
+            }
+        } catch (IOException e) {
+            System.err.println("Error al guardar proyectos: " + e.getMessage());
+        }
+    }
 }
