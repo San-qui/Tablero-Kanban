@@ -1,8 +1,12 @@
 package com.example.tablero_kanban;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.cglib.core.Local;
+
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -74,6 +78,25 @@ public class KanbanView extends VerticalLayout {
             }
         }
 
+        public VerticalLayout crearTarjeta(Tarea t) {
+            VerticalLayout card = new VerticalLayout();
+            card.getStyle().set("background-color", "white");
+            card.getStyle().set("border", "1px solid #ccc");
+            card.getStyle().set("border-radius", "8px");
+            card.getStyle().set("box-shadow", "0 2px 4px rgba(0,0,0,0.1)");
+            card.setWidthFull();
+
+            Paragraph pTitulo = new Paragraph(t.titulo);
+
+            Paragraph pInfo = new Paragraph("Prioridad: " + t.prioridad + " | Vence: " + t.fechaLimite);
+
+            LocalDate hoy = LocalDate.now();
+
+            if (t.fechaLimite.isBefore(hoy) && !t.estado.equals("Hecho")) {
+                card.getStyle().set("background-color", "#ffe6e6");
+                pInfo.setText(pInfo.getText() + " (Vencida)");
+            }
+        }
     }
 
 
