@@ -21,8 +21,10 @@ public class MainLayout extends AppLayout {
 
         Button btnTablero = new Button("Tablero Kanban", e -> UI.getCurrent().navigate(KanbanView.class));
 
+        Button btnProyectos = new Button("Gestión de Proyectos", e -> UI.getCurrent().navigate(ProyectosView.class));
+
         VerticalLayout menuLateral = new VerticalLayout();
-        menuLateral.add(btnTablero);
+        menuLateral.add(btnTablero, btnProyectos);
 
         addToDrawer(menuLateral);
     }
