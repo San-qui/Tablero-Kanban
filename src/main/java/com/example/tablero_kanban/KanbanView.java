@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
@@ -148,6 +149,12 @@ public class KanbanView extends VerticalLayout {
             botonesMover.add(btnRetroceder, btnAvanzar);
 
             card.add(pTitulo, new Paragraph(t.descripcion), pInfo, checkSubtarea, botonesMover);
+
+        DragSource<VerticalLayout> dragSource = DragSource.create(card);
+        dragSource.setDraggable(true);
+
+        dragSource.setDragData(t); 
+
             return card;
         }
         public void revisarVencimientos(){
