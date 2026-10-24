@@ -60,6 +60,10 @@ public class KanbanView extends VerticalLayout {
         columnaEnProgreso.setWidth(null);
         columnaHecho.setWidth(null);
 
+        configurarColumnaDrop(columnaPorHacer, "Por hacer");
+        configurarColumnaDrop(columnaEnProgreso, "En progreso");
+        configurarColumnaDrop(columnaHecho, "Hecho");
+
         HorizontalLayout tableroLayout = new HorizontalLayout();
         tableroLayout.add(columnaPorHacer, columnaEnProgreso, columnaHecho);
         tableroLayout.setWidthFull();
