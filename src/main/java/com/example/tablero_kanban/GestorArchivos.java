@@ -14,6 +14,7 @@ import java.util.List;
 public class GestorArchivos {
     public static String archivoTareas = "tareas.txt";
     public static String archivoProyectos = "proyectos.txt";
+    public static String archivoComentarios = "comentarios.txt";
 
     public static void inicializarDatos() {
         File fProyectos = new File(archivoProyectos);
@@ -101,6 +102,34 @@ public class GestorArchivos {
             }
         } catch (IOException e) {
             System.err.println("Error al guardar proyectos: " + e.getMessage());
+        }
+    }
+    public static List<Comentario> leerComentariosDeTarea(int idTareaBusqueda) {
+        List<Comentario> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(archivoComentarios))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] datos = linea.split("\\|");
+                int idTarea = Integer.parseInt(datos[0]);
+                
+                if (idTarea == idTareaBusqueda) {
+                    Comentario c = new Comentario();
+                    c.idTarea = idTarea;
+                    c.fecha = LocalDate.parse(datos[1]);
+                    c.texto = datos[2];
+                    lista.add(c);
+                }
+            }
+        } catch (Exception e) {
+        }
+        return lista;
+    }
+
+    public static void agregarComentario(Comentario c) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(archivoComentarios, true)))) {
+            out.println(c.idTarea + "|" + c.fecha.toString() + "|" + c.texto);
+        } catch (IOException e) {
+            System.err.println("Error al guardar comentario: " + e.getMessage());
         }
     }
 }
