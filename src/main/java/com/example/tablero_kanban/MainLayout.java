@@ -23,8 +23,10 @@ public class MainLayout extends AppLayout {
 
         Button btnProyectos = new Button("Gestión de Proyectos", e -> UI.getCurrent().navigate(ProyectosView.class));
 
+        Button btnTareas = new Button("Gestión de Tareas", e -> UI.getCurrent().navigate(TareasView.class));
+
         VerticalLayout menuLateral = new VerticalLayout();
-        menuLateral.add(btnTablero, btnProyectos);
+        menuLateral.add(btnTablero, btnProyectos, btnTareas);
 
         addToDrawer(menuLateral);
     }
