@@ -1,16 +1,21 @@
 package com.example.tablero_kanban;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -76,6 +81,58 @@ public class TareasView extends VerticalLayout {
                 selectProyecto.clear();
             }
         });
+        TextField txtBuscar = new TextField();
+        txtBuscar.setPlaceholder("Buscar tarea por título...");
+        txtBuscar.setClearButtonVisible(true);
+        txtBuscar.setValueChangeMode(ValueChangeMode.LAZY);
+        txtBuscar.addValueChangeListener(e -> filtrarGrid(e.getValue()));
+
+        HorizontalLayout barraSuperior = new HorizontalLayout(txtBuscar, btnGuardar);
+        barraSuperior.setDefaultVerticalComponentAlignment(Alignment.END);
+
+        add(formulario, barraSuperior);
+
+        gridTareas = new Grid<>(Tarea.class, false);
+        gridTareas.addColumn(t -> t.id).setHeader("ID").setWidth("60px").setFlexGrow(0);
+        gridTareas.addColumn(t -> t.titulo).setHeader("Título");
+        gridTareas.addColumn(t -> t.fechaLimite).setHeader("Vence");
+        gridTareas.addColumn(t -> t.prioridad).setHeader("Prioridad");
+        gridTareas.addColumn(t -> t.estado).setHeader("Estado");
+
+        gridTareas.addComponentColumn(tarea -> {
+            Button btnBorrar = new Button("Borrar");
+            btnBorrar.addClickListener(e -> abrirDialogoConfirmacion(tarea));
+            return btnBorrar;
+        });
+        gridTareas.setItems(listaTareas);
+        add(gridTareas);
     }
 
+    public void filtrarGrid(String textoFiltro) {
+        if (textoFiltro == null || textoFiltro.isEmpty()) {
+            gridTareas.setItems(listaTareas);
+        } else {
+            List<Tarea> filtradas = listaTareas.stream()
+                    .filter(t -> t.titulo.toLowerCase().contains(textoFiltro.toLowerCase()))
+                    .collect(Collectors.toList());
+            gridTareas.setItems(filtradas);
+        }
+    }
+
+    public void abrirDialogoConfirmacion(Tarea t) {
+        Dialog dialogo = new Dialog();
+        dialogo.setHeaderTitle("¿Borrar tarea?");
+        dialogo.add(new Paragraph("¿Borrar '" + t.titulo + "'?"));
+
+        Button btnCancelar = new Button("Cancelar", e -> dialogo.close());
+        Button btnConfirmar = new Button("Borrar", e -> {
+            listaTareas.remove(t);
+            GestorArchivos.guardarTareas(listaTareas);
+            gridTareas.getDataProvider().refreshAll();
+            dialogo.close();
+        });
+
+        dialogo.getFooter().add(btnCancelar, btnConfirmar);
+        dialogo.open();
+    }
 }
