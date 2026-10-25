@@ -125,13 +125,58 @@ public class KanbanView extends VerticalLayout {
             pInfo.setText(pInfo.getText() + " (Vencida)");
         }
 
-        Checkbox checkSubtarea = new Checkbox("Marcar Subtarea como lista");
+        VerticalLayout zonaSubtareas = new VerticalLayout();
+        zonaSubtareas.setPadding(false);
+        zonaSubtareas.setSpacing(false);
 
-        checkSubtarea.addValueChangeListener(e -> {
-            if (e.getValue() == true) {
-                Notification.show("Subtarea completada").setPosition(Position.BOTTOM_END);
+        List<Subtarea> todasLasSubtareas = GestorArchivos.leerTodasLasSubtareas();
+        
+        int totalSubtareas = 0;
+        int completadas = 0;
+
+        for (Subtarea s : todasLasSubtareas) {
+            if (s.idTarea == t.id) {
+                totalSubtareas++;
+                if (s.completada) {
+                    completadas++;
+                }
+                
+                Checkbox chk = new Checkbox(s.texto);
+                chk.setValue(s.completada);
+                chk.addValueChangeListener(e -> {
+                    s.completada = e.getValue();
+                    GestorArchivos.guardarTodasLasSubtareas(todasLasSubtareas);
+                    dibujarTablero(filtroPrioridad.getValue());
+                });
+                
+                zonaSubtareas.add(chk);
+            }
+        }
+
+        Paragraph indicadorProgreso = new Paragraph("Subtareas: " + completadas + "/" + totalSubtareas);
+        indicadorProgreso.getStyle().set("font-size", "13px").set("font-weight", "bold").set("margin-top", "10px");
+        
+        TextField txtNuevaSubtarea = new TextField();
+        txtNuevaSubtarea.setPlaceholder("Nueva subtarea...");
+        Button btnAddSub = new Button("+", e -> {
+            if (!txtNuevaSubtarea.isEmpty()) {
+                Subtarea nueva = new Subtarea();
+                nueva.idTarea = t.id;
+                nueva.texto = txtNuevaSubtarea.getValue();
+                nueva.completada = false;
+                
+                todasLasSubtareas.add(nueva);
+                GestorArchivos.guardarTodasLasSubtareas(todasLasSubtareas);
+                dibujarTablero(filtroPrioridad.getValue());
             }
         });
+        HorizontalLayout filaNuevaSub = new HorizontalLayout(txtNuevaSubtarea, btnAddSub);
+        filaNuevaSub.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+
+        zonaSubtareas.addComponentAsFirst(indicadorProgreso); 
+        zonaSubtareas.add(filaNuevaSub); 
+
+
         HorizontalLayout botonesMover = new HorizontalLayout();
 
         Button btnRetroceder = new Button("←");
@@ -192,7 +237,7 @@ public class KanbanView extends VerticalLayout {
         HorizontalLayout cajaComentar = new HorizontalLayout(txtComentario, btnComentar);
         cajaComentar.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 
-        card.add(pTitulo, new Paragraph(t.descripcion), pInfo, checkSubtarea, seccionComentarios, cajaComentar, botonesMover);
+        card.add(pTitulo, new Paragraph(t.descripcion), pInfo, zonaSubtareas, seccionComentarios, cajaComentar, botonesMover);
 
         DragSource<VerticalLayout> dragSource = DragSource.create(card);
         dragSource.setDraggable(true);
