@@ -15,6 +15,7 @@ public class GestorArchivos {
     public static String archivoTareas = "tareas.txt";
     public static String archivoProyectos = "proyectos.txt";
     public static String archivoComentarios = "comentarios.txt";
+    public static String archivoSubtareas = "subtareas.txt";
 
     public static void inicializarDatos() {
         File fProyectos = new File(archivoProyectos);
@@ -104,6 +105,7 @@ public class GestorArchivos {
             System.err.println("Error al guardar proyectos: " + e.getMessage());
         }
     }
+
     public static List<Comentario> leerComentariosDeTarea(int idTareaBusqueda) {
         List<Comentario> lista = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(archivoComentarios))) {
@@ -111,7 +113,7 @@ public class GestorArchivos {
             while ((linea = br.readLine()) != null) {
                 String[] datos = linea.split("\\|");
                 int idTarea = Integer.parseInt(datos[0]);
-                
+
                 if (idTarea == idTareaBusqueda) {
                     Comentario c = new Comentario();
                     c.idTarea = idTarea;
@@ -130,6 +132,33 @@ public class GestorArchivos {
             out.println(c.idTarea + "|" + c.fecha.toString() + "|" + c.texto);
         } catch (IOException e) {
             System.err.println("Error al guardar comentario: " + e.getMessage());
+        }
+    }
+
+    public static List<Subtarea> leerTodasLasSubtareas() {
+        List<Subtarea> lista = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(archivoSubtareas))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] datos = linea.split("\\|");
+                Subtarea s = new Subtarea();
+                s.idTarea = Integer.parseInt(datos[0]);
+                s.texto = datos[1];
+                s.completada = Boolean.parseBoolean(datos[2]);
+                lista.add(s);
+            }
+        } catch (Exception e) {
+        }
+        return lista;
+    }
+
+    public static void guardarTodasLasSubtareas(List<Subtarea> lista) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(archivoSubtareas)))) {
+            for (Subtarea s : lista) {
+                out.println(s.idTarea + "|" + s.texto + "|" + s.completada);
+            }
+        } catch (Exception e) {
+            System.err.println("Error guardando subtareas: " + e.getMessage());
         }
     }
 }
