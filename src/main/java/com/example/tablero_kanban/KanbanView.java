@@ -30,6 +30,8 @@ public class KanbanView extends VerticalLayout {
     public VerticalLayout columnaHecho;
 
     public Select<String> filtroPrioridad;
+    public Select<String> filtroProyecto;
+    public List<Proyecto> listaProyectos;
 
     public KanbanView() {
         setSizeFull();
