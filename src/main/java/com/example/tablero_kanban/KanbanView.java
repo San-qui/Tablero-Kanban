@@ -56,11 +56,11 @@ public class KanbanView extends VerticalLayout {
         filtroProyecto.setValue("Todos");
 
         filtroPrioridad.addValueChangeListener(e -> {
-            dibujarTablero(e.getValue());
+            dibujarTablero(e.getValue(), filtroProyecto.getValue());
         });
 
         filtroProyecto.addValueChangeListener(e -> {
-            dibujarTablero(e.getValue());
+            dibujarTablero(filtroPrioridad.getValue(), e.getValue());
         });
 
         columnaPorHacer = new VerticalLayout();
@@ -93,12 +93,12 @@ public class KanbanView extends VerticalLayout {
 
         add(filtroPrioridad, filtroProyecto, tableroLayout);
 
-        dibujarTablero("Todas");
+        dibujarTablero("Todas", "Todos");
         revisarVencimientos();
 
     }
 
-    public void dibujarTablero(String filtro) {
+    public void dibujarTablero(String filtroPrioridad, String filtroProyecto) {
         columnaPorHacer.removeAll();
         columnaEnProgreso.removeAll();
         columnaHecho.removeAll();
@@ -108,9 +108,18 @@ public class KanbanView extends VerticalLayout {
         columnaHecho.add(new H2("Hecho"));
 
         for (Tarea t : todasLasTareas) {
+            boolean pasaPrioridad = filtroPrioridad.equals("Todas") || t.prioridad.equals(filtroPrioridad);
+            
+            String nombreProyectoTarea = "";
+            for (Proyecto p : listaProyectos) {
+                if (p.id == t.idProyecto) {
+                    nombreProyectoTarea = p.nombre;
+                }
+            }
+            
+            boolean pasaProyecto = filtroProyecto.equals("Todos") || nombreProyectoTarea.equals(filtroProyecto);
 
-            if (filtro.equals("Todas") || t.prioridad.equals(filtro)) {
-
+            if (pasaPrioridad && pasaProyecto) {
                 VerticalLayout tarjeta = crearTarjeta(t);
 
                 if (t.estado.equals("Por hacer")) {
@@ -164,7 +173,7 @@ public class KanbanView extends VerticalLayout {
                 chk.addValueChangeListener(e -> {
                     s.completada = e.getValue();
                     GestorArchivos.guardarTodasLasSubtareas(todasLasSubtareas);
-                    dibujarTablero(filtroPrioridad.getValue());
+                    dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
                 });
                 
                 zonaSubtareas.add(chk);
@@ -185,7 +194,7 @@ public class KanbanView extends VerticalLayout {
                 
                 todasLasSubtareas.add(nueva);
                 GestorArchivos.guardarTodasLasSubtareas(todasLasSubtareas);
-                dibujarTablero(filtroPrioridad.getValue());
+                dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
             }
         });
         HorizontalLayout filaNuevaSub = new HorizontalLayout(txtNuevaSubtarea, btnAddSub);
@@ -205,7 +214,7 @@ public class KanbanView extends VerticalLayout {
                 t.estado = "Por hacer";
 
             GestorArchivos.guardarTareas(todasLasTareas);
-            dibujarTablero(filtroPrioridad.getValue());
+            dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
         });
 
         Button btnAvanzar = new Button("→");
@@ -216,7 +225,7 @@ public class KanbanView extends VerticalLayout {
                 t.estado = "Hecho";
 
             GestorArchivos.guardarTareas(todasLasTareas);
-            dibujarTablero(filtroPrioridad.getValue());
+            dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
         });
 
         if (t.estado.equals("Por hacer"))
@@ -248,7 +257,7 @@ public class KanbanView extends VerticalLayout {
                 nuevo.texto = txtComentario.getValue();
                 
                 GestorArchivos.agregarComentario(nuevo); 
-                dibujarTablero(filtroPrioridad.getValue()); 
+                dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue()); 
             }
         });
 
@@ -292,7 +301,7 @@ public class KanbanView extends VerticalLayout {
                     if (!tareaArrastrada.estado.equals(estadoDestino)) {
                         tareaArrastrada.estado = estadoDestino;
                         GestorArchivos.guardarTareas(todasLasTareas);
-                        dibujarTablero(filtroPrioridad.getValue());
+                        dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
                     }
                 }
             });
