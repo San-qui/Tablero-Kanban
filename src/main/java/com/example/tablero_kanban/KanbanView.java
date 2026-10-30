@@ -43,7 +43,23 @@ public class KanbanView extends VerticalLayout {
         filtroPrioridad.setItems("Todas", "Alta", "Media", "Baja");
         filtroPrioridad.setValue("Todas");
 
+        listaProyectos = GestorArchivos.leerProyectos();
+        filtroProyecto = new Select<>();
+        filtroProyecto.setLabel("Filtrar por proyecto");
+
+        java.util.List<String> nombresProyectos = new java.util.ArrayList<>();
+        nombresProyectos.add("Todos");
+        for (Proyecto p : listaProyectos) {
+            nombresProyectos.add(p.nombre);
+        }
+        filtroProyecto.setItems(nombresProyectos);
+        filtroProyecto.setValue("Todos");
+
         filtroPrioridad.addValueChangeListener(e -> {
+            dibujarTablero(e.getValue());
+        });
+
+        filtroProyecto.addValueChangeListener(e -> {
             dibujarTablero(e.getValue());
         });
 
@@ -75,7 +91,7 @@ public class KanbanView extends VerticalLayout {
 
         tableroLayout.setFlexGrow(1, columnaPorHacer, columnaEnProgreso, columnaHecho);
 
-        add(filtroPrioridad, tableroLayout);
+        add(filtroPrioridad, filtroProyecto, tableroLayout);
 
         dibujarTablero("Todas");
         revisarVencimientos();
