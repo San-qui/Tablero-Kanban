@@ -132,15 +132,24 @@ public class GestorArchivos {
         try (BufferedReader br = new BufferedReader(new FileReader(archivoComentarios))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split("\\|");
-                int idTarea = Integer.parseInt(datos[0]);
 
-                if (idTarea == idTareaBusqueda) {
-                    Comentario c = new Comentario();
-                    c.idTarea = idTarea;
-                    c.fecha = LocalDate.parse(datos[1]);
-                    c.texto = datos[2];
-                    lista.add(c);
+                try {
+                    String[] datos = linea.split("\\|");
+
+                    if (datos.length < 3) {
+                        continue;
+                    }
+                    int idTarea = Integer.parseInt(datos[0]);
+
+                    if (idTarea == idTareaBusqueda) {
+                        Comentario c = new Comentario();
+                        c.idTarea = idTarea;
+                        c.fecha = LocalDate.parse(datos[1]);
+                        c.texto = datos[2];
+                        lista.add(c);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Linea saltada: " + linea);
                 }
             }
         } catch (Exception e) {
