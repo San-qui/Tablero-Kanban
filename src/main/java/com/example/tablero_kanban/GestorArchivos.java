@@ -170,12 +170,20 @@ public class GestorArchivos {
         try (BufferedReader br = new BufferedReader(new FileReader(archivoSubtareas))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split("\\|");
-                Subtarea s = new Subtarea();
-                s.idTarea = Integer.parseInt(datos[0]);
-                s.texto = datos[1];
-                s.completada = Boolean.parseBoolean(datos[2]);
-                lista.add(s);
+                try {
+                    String[] datos = linea.split("\\|");
+                    if (datos.length < 3) {
+                        continue;
+                    }
+
+                    Subtarea s = new Subtarea();
+                    s.idTarea = Integer.parseInt(datos[0]);
+                    s.texto = datos[1];
+                    s.completada = Boolean.parseBoolean(datos[2]);
+                    lista.add(s);
+                } catch (Exception e) {
+                    System.err.println("Linea saltada: " + linea);
+                }
             }
         } catch (Exception e) {
         }
