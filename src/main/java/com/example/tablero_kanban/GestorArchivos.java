@@ -93,12 +93,23 @@ public class GestorArchivos {
         try (BufferedReader br = new BufferedReader(new FileReader(archivoProyectos))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split("\\|");
 
-                Proyecto p = new Proyecto();
-                p.id = Integer.parseInt(datos[0]);
-                p.nombre = datos[1];
-                lista.add(p);
+                try {
+                    String[] datos = linea.split("\\|");
+
+                    if (datos.length < 2) {
+                        continue;
+                    }
+
+                    Proyecto p = new Proyecto();
+                    p.id = Integer.parseInt(datos[0]);
+                    p.nombre = datos[1];
+                    lista.add(p);
+
+                } catch (Exception e) {
+                    System.err.println("Linea saltada: " + linea);
+                    continue;
+                }
             }
         } catch (Exception e) {
             System.err.println("Error al leer proyectos: " + e.getMessage());
