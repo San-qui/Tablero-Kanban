@@ -26,6 +26,7 @@ public class TareasView extends VerticalLayout {
     public List<Tarea> listaTareas;
     public List<Proyecto> listaProyectos;
     public Grid<Tarea> gridTareas;
+    public Tarea tareaEditando = null;
 
     public TareasView() {
         listaTareas = GestorArchivos.leerTareas();
@@ -49,30 +50,46 @@ public class TareasView extends VerticalLayout {
         FormLayout formulario = new FormLayout();
         formulario.add(txtTitulo, txtDesc, pickerFecha, selectPrioridad, selectProyecto);
 
-        Button btnGuardar = new Button("Crear Tarea");
+        Button btnGuardar = new Button("Guardar Tarea");
+        Button btnCancelarEdicion = new Button("Cancelar edición");
+        btnCancelarEdicion.setVisible(false);
+
         btnGuardar.addClickListener(e -> {
             if (txtTitulo.isEmpty() || pickerFecha.isEmpty() || selectPrioridad.isEmpty() || selectProyecto.isEmpty()) {
                 Notification.show("Error: Llena todos los campos obligatorios");
             } else {
-                int nuevoId = 1;
-                if (!listaTareas.isEmpty()) {
-                    nuevoId = listaTareas.get(listaTareas.size() - 1).id + 1;
+                if (tareaEditando == null) {
+
+                    int nuevoId = 1;
+                    if (!listaTareas.isEmpty()) {
+                        nuevoId = listaTareas.get(listaTareas.size() - 1).id + 1;
+                    }
+
+                    Tarea nuevaTarea = new Tarea();
+                    nuevaTarea.id = nuevoId;
+                    nuevaTarea.titulo = txtTitulo.getValue();
+                    nuevaTarea.descripcion = txtDesc.getValue();
+                    nuevaTarea.fechaLimite = pickerFecha.getValue();
+                    nuevaTarea.prioridad = selectPrioridad.getValue();
+                    nuevaTarea.estado = "Por hacer";
+                    nuevaTarea.idProyecto = selectProyecto.getValue().id;
+
+                    listaTareas.add(nuevaTarea);
+                    Notification.show("Tarea creada con éxito");
+                } else {
+                    tareaEditando.titulo = txtTitulo.getValue();
+                    tareaEditando.descripcion = txtDesc.getValue();
+                    tareaEditando.fechaLimite = pickerFecha.getValue();
+                    tareaEditando.prioridad = selectPrioridad.getValue();
+                    tareaEditando.idProyecto = selectProyecto.getValue().id;
+                    tareaEditando = null;
+                    btnGuardar.setText("Guardar Tarea");
+                    btnCancelarEdicion.setVisible(false);
+                    Notification.show("Tarea actualizada");
                 }
 
-                Tarea nuevaTarea = new Tarea();
-                nuevaTarea.id = nuevoId;
-                nuevaTarea.titulo = txtTitulo.getValue();
-                nuevaTarea.descripcion = txtDesc.getValue();
-                nuevaTarea.fechaLimite = pickerFecha.getValue();
-                nuevaTarea.prioridad = selectPrioridad.getValue();
-                nuevaTarea.estado = "Por hacer";
-                nuevaTarea.idProyecto = selectProyecto.getValue().id;
-
-                listaTareas.add(nuevaTarea);
                 GestorArchivos.guardarTareas(listaTareas);
                 gridTareas.getDataProvider().refreshAll();
-
-                Notification.show("Tarea creada con éxito");
 
                 txtTitulo.clear();
                 txtDesc.clear();
@@ -81,13 +98,32 @@ public class TareasView extends VerticalLayout {
                 selectProyecto.clear();
             }
         });
+
+        btnCancelarEdicion.addClickListener(e -> {
+            tareaEditando = null;
+            btnGuardar.setText("Guardar tarea");
+            btnCancelarEdicion.setVisible(false);
+            txtTitulo.clear();
+            txtDesc.clear();
+            pickerFecha.clear();
+            selectPrioridad.clear();
+            selectProyecto.clear();
+        });
+
         TextField txtBuscar = new TextField();
         txtBuscar.setPlaceholder("Buscar tarea por título...");
         txtBuscar.setClearButtonVisible(true);
         txtBuscar.setValueChangeMode(ValueChangeMode.LAZY);
-        txtBuscar.addValueChangeListener(e -> filtrarGrid(e.getValue()));
 
-        HorizontalLayout barraSuperior = new HorizontalLayout(txtBuscar, btnGuardar);
+        Select<String> filtroGridEstado = new Select<>();
+        filtroGridEstado.setPlaceholder("Filtrar por estado");
+        filtroGridEstado.setItems("Todos", "Por hacer", "En progreso", "Hecho");
+        filtroGridEstado.setValue("Todos");
+
+        txtBuscar.addValueChangeListener(e -> filtrarGrid(txtBuscar.getValue(), filtroGridEstado.getValue()));
+        filtroGridEstado.addValueChangeListener(e -> filtrarGrid(txtBuscar.getValue(), filtroGridEstado.getValue()));
+
+        HorizontalLayout barraSuperior = new HorizontalLayout(txtBuscar, filtroGridEstado, btnGuardar, btnCancelarEdicion);
         barraSuperior.setDefaultVerticalComponentAlignment(Alignment.END);
 
         add(formulario, barraSuperior);
@@ -100,6 +136,24 @@ public class TareasView extends VerticalLayout {
         gridTareas.addColumn(t -> t.estado).setHeader("Estado");
 
         gridTareas.addComponentColumn(tarea -> {
+            Button btnEditar = new Button("Editar");
+            btnEditar.addClickListener(e -> {
+                tareaEditando = tarea;
+                txtTitulo.setValue(tarea.titulo);
+                txtDesc.setValue(tarea.descripcion);
+                pickerFecha.setValue(tarea.fechaLimite);
+                selectPrioridad.setValue(tarea.prioridad);
+
+                for (Proyecto p : listaProyectos) {
+                    if (p.id == tarea.idProyecto) selectProyecto.setValue(p);
+                    }
+                    btnGuardar.setText("Actualizar");
+                    btnCancelarEdicion.setVisible(true);
+            });
+            return btnEditar;
+        });
+
+        gridTareas.addComponentColumn(tarea -> {
             Button btnBorrar = new Button("Borrar");
             btnBorrar.addClickListener(e -> abrirDialogoConfirmacion(tarea));
             return btnBorrar;
@@ -108,16 +162,15 @@ public class TareasView extends VerticalLayout {
         add(gridTareas);
     }
 
-    public void filtrarGrid(String textoFiltro) {
-        if (textoFiltro == null || textoFiltro.isEmpty()) {
-            gridTareas.setItems(listaTareas);
-        } else {
+    public void filtrarGrid(String texto, String estadoFiltro) {
+        String t = (texto == null) ? "" : texto.toLowerCase();
+        
             List<Tarea> filtradas = listaTareas.stream()
-                    .filter(t -> t.titulo.toLowerCase().contains(textoFiltro.toLowerCase()))
+                    .filter(tarea -> tarea.titulo.toLowerCase().contains(t))
+                    .filter(tarea -> estadoFiltro.equals("Todos") || tarea.estado.equals(estadoFiltro))
                     .collect(Collectors.toList());
             gridTareas.setItems(filtradas);
         }
-    }
 
     public void abrirDialogoConfirmacion(Tarea t) {
         Dialog dialogo = new Dialog();
