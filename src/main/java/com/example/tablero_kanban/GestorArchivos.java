@@ -48,18 +48,28 @@ public class GestorArchivos {
         try (BufferedReader br = new BufferedReader(new FileReader(archivoTareas))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split("\\|");
 
-                Tarea t = new Tarea();
-                t.id = Integer.parseInt(datos[0]);
-                t.titulo = datos[1];
-                t.descripcion = datos[2];
-                t.fechaLimite = LocalDate.parse(datos[3]);
-                t.prioridad = datos[4];
-                t.estado = datos[5];
-                t.idProyecto = Integer.parseInt(datos[6]);
+                try {
+                    String[] datos = linea.split("\\|");
 
-                lista.add(t);
+                    if (datos.length < 7) {
+                        continue;
+                    }
+
+                    Tarea t = new Tarea();
+                    t.id = Integer.parseInt(datos[0]);
+                    t.titulo = datos[1];
+                    t.descripcion = datos[2];
+                    t.fechaLimite = LocalDate.parse(datos[3]);
+                    t.prioridad = datos[4];
+                    t.estado = datos[5];
+                    t.idProyecto = Integer.parseInt(datos[6]);
+
+                    lista.add(t);
+                } catch (Exception e) {
+                    System.err.println("Linea saltada: " + linea);
+                    continue;
+                }
             }
         } catch (Exception e) {
             System.out.println("Error al leer tareas: " + e.getMessage());
