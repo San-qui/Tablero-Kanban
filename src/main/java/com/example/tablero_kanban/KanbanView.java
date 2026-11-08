@@ -67,9 +67,9 @@ public class KanbanView extends VerticalLayout {
         columnaEnProgreso = new VerticalLayout();
         columnaHecho = new VerticalLayout();
 
-        columnaPorHacer.getStyle().set("background-color", "#f4f5f7");
-        columnaEnProgreso.getStyle().set("background-color", "#f4f5f7");
-        columnaHecho.getStyle().set("background-color", "#f4f5f7");
+        columnaPorHacer.getStyle().set("background-color", "#ff8888");
+        columnaEnProgreso.getStyle().set("background-color", "#eeeb47");
+        columnaHecho.getStyle().set("background-color", "#32912e");
 
         columnaPorHacer.setMinWidth("300px");
         columnaEnProgreso.setMinWidth("300px");
