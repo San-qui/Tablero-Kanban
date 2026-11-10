@@ -87,6 +87,8 @@ public class KanbanView extends VerticalLayout {
         tableroLayout.add(columnaPorHacer, columnaEnProgreso, columnaHecho);
         tableroLayout.setWidthFull();
 
+        // Flex-wrap asegura que las 3 columnas se adapten a el tamaño de la pantalla, y
+        // se apilen en los celulares
         tableroLayout.getStyle().set("flex-wrap", "wrap");
 
         tableroLayout.setFlexGrow(1, columnaPorHacer, columnaEnProgreso, columnaHecho);
@@ -98,6 +100,8 @@ public class KanbanView extends VerticalLayout {
 
     }
 
+    // Este metodo limpia el tablero actual y redibuja las columnas evaluando el
+    // filtro, ya sea por Prioridad y/o Proyecto
     public void dibujarTablero(String filtroPrioridad, String filtroProyecto) {
         columnaPorHacer.removeAll();
         columnaEnProgreso.removeAll();
@@ -109,14 +113,14 @@ public class KanbanView extends VerticalLayout {
 
         for (Tarea t : todasLasTareas) {
             boolean pasaPrioridad = filtroPrioridad.equals("Todas") || t.prioridad.equals(filtroPrioridad);
-            
+
             String nombreProyectoTarea = "";
             for (Proyecto p : listaProyectos) {
                 if (p.id == t.idProyecto) {
                     nombreProyectoTarea = p.nombre;
                 }
             }
-            
+
             boolean pasaProyecto = filtroProyecto.equals("Todos") || nombreProyectoTarea.equals(filtroProyecto);
 
             if (pasaPrioridad && pasaProyecto) {
@@ -134,6 +138,8 @@ public class KanbanView extends VerticalLayout {
     }
 
     public VerticalLayout crearTarjeta(Tarea t) {
+
+        // Aquí está el componente CARD investigado
         VerticalLayout card = new VerticalLayout();
         card.getStyle().set("background-color", "white");
         card.getStyle().set("border", "1px solid #ccc");
@@ -157,7 +163,7 @@ public class KanbanView extends VerticalLayout {
         zonaSubtareas.setSpacing(false);
 
         List<Subtarea> todasLasSubtareas = GestorArchivos.leerTodasLasSubtareas();
-        
+
         int totalSubtareas = 0;
         int completadas = 0;
 
@@ -167,7 +173,9 @@ public class KanbanView extends VerticalLayout {
                 if (s.completada) {
                     completadas++;
                 }
-                
+
+                // Aquí esta el componente CHECKBOX investigado, el cual esta asociado a cada
+                // una de las subtareas y también guarda su estado directamente en el archivo
                 Checkbox chk = new Checkbox(s.texto);
                 chk.setValue(s.completada);
                 chk.addValueChangeListener(e -> {
@@ -175,14 +183,14 @@ public class KanbanView extends VerticalLayout {
                     GestorArchivos.guardarTodasLasSubtareas(todasLasSubtareas);
                     dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
                 });
-                
+
                 zonaSubtareas.add(chk);
             }
         }
 
         Paragraph indicadorProgreso = new Paragraph("Subtareas: " + completadas + "/" + totalSubtareas);
         indicadorProgreso.getStyle().set("font-size", "13px").set("font-weight", "bold").set("margin-top", "10px");
-        
+
         TextField txtNuevaSubtarea = new TextField();
         txtNuevaSubtarea.setPlaceholder("Nueva subtarea...");
         Button btnAddSub = new Button("+", e -> {
@@ -191,7 +199,7 @@ public class KanbanView extends VerticalLayout {
                 nueva.idTarea = t.id;
                 nueva.texto = txtNuevaSubtarea.getValue();
                 nueva.completada = false;
-                
+
                 todasLasSubtareas.add(nueva);
                 GestorArchivos.guardarTodasLasSubtareas(todasLasSubtareas);
                 dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
@@ -200,9 +208,8 @@ public class KanbanView extends VerticalLayout {
         HorizontalLayout filaNuevaSub = new HorizontalLayout(txtNuevaSubtarea, btnAddSub);
         filaNuevaSub.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 
-        zonaSubtareas.addComponentAsFirst(indicadorProgreso); 
-        zonaSubtareas.add(filaNuevaSub); 
-
+        zonaSubtareas.addComponentAsFirst(indicadorProgreso);
+        zonaSubtareas.add(filaNuevaSub);
 
         HorizontalLayout botonesMover = new HorizontalLayout();
 
@@ -248,23 +255,24 @@ public class KanbanView extends VerticalLayout {
 
         TextField txtComentario = new TextField();
         txtComentario.setPlaceholder("Escribe un comentario...");
-        
+
         Button btnComentar = new Button("Enviar", e -> {
             if (!txtComentario.isEmpty()) {
                 Comentario nuevo = new Comentario();
                 nuevo.idTarea = t.id;
                 nuevo.fecha = LocalDate.now();
                 nuevo.texto = txtComentario.getValue();
-                
-                GestorArchivos.agregarComentario(nuevo); 
-                dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue()); 
+
+                GestorArchivos.agregarComentario(nuevo);
+                dibujarTablero(filtroPrioridad.getValue(), filtroProyecto.getValue());
             }
         });
 
         HorizontalLayout cajaComentar = new HorizontalLayout(txtComentario, btnComentar);
         cajaComentar.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 
-        card.add(pTitulo, new Paragraph(t.descripcion), pInfo, zonaSubtareas, seccionComentarios, cajaComentar, botonesMover);
+        card.add(pTitulo, new Paragraph(t.descripcion), pInfo, zonaSubtareas, seccionComentarios, cajaComentar,
+                botonesMover);
 
         DragSource<VerticalLayout> dragSource = DragSource.create(card);
         dragSource.setDraggable(true);
@@ -289,6 +297,9 @@ public class KanbanView extends VerticalLayout {
         }
     }
 
+    // Esta es la bonificación, que transforma cada columna en un DropTarget, que
+    // sirve para recibir la tarjeta que sea arrastrada, ademas de cambiar su estado
+    // por el estado donde se dejó caer
     public void configurarColumnaDrop(VerticalLayout columna, String estadoDestino) {
         DropTarget<VerticalLayout> dropTarget = DropTarget.create(columna);
         dropTarget.setDropEffect(DropEffect.MOVE);
