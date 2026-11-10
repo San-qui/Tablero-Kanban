@@ -9,6 +9,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class MainLayout extends AppLayout {
+
+    // Es la clase principal que importa AppLayout para poder tener un diseño
+    // responsivo con menú lateral ajustable tanto en computador como en celulares
     public MainLayout() {
         GestorArchivos.inicializarDatos();
 
@@ -19,6 +22,10 @@ public class MainLayout extends AppLayout {
         HorizontalLayout barraSuperior = new HorizontalLayout();
         barraSuperior.add(botonMenu, titulo);
 
+        addToNavbar(barraSuperior);
+
+        // Es la navegación entre vistas, usando el UI.getCurrent().navigate para
+        // cumplir el requisito de 3 vistas: Tablero, Proyectos y Tareas
         Button btnTablero = new Button("Tablero Kanban", e -> UI.getCurrent().navigate(KanbanView.class));
 
         Button btnProyectos = new Button("Gestión de Proyectos", e -> UI.getCurrent().navigate(ProyectosView.class));
