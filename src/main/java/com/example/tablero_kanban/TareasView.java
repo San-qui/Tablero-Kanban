@@ -54,6 +54,9 @@ public class TareasView extends VerticalLayout {
         Button btnCancelarEdicion = new Button("Cancelar edición");
         btnCancelarEdicion.setVisible(false);
 
+        // Aquí se hace una validación del formulario, contiene la lógica que el
+        // proyecto pide: si tareaEditando es null crea una tarea nueva, si no, la
+        // actualiza/edita
         btnGuardar.addClickListener(e -> {
             if (txtTitulo.isEmpty() || pickerFecha.isEmpty() || selectPrioridad.isEmpty() || selectProyecto.isEmpty()) {
                 Notification.show("Error: Llena todos los campos obligatorios");
@@ -120,10 +123,13 @@ public class TareasView extends VerticalLayout {
         filtroGridEstado.setItems("Todos", "Por hacer", "En progreso", "Hecho");
         filtroGridEstado.setValue("Todos");
 
+        // Se cumple el requisito de búsqueda en tiempo real, el ValueChangeMode.LAZY
+        // ayuda a evitar búsquedas innecesarias por cada tecla copiada
         txtBuscar.addValueChangeListener(e -> filtrarGrid(txtBuscar.getValue(), filtroGridEstado.getValue()));
         filtroGridEstado.addValueChangeListener(e -> filtrarGrid(txtBuscar.getValue(), filtroGridEstado.getValue()));
 
-        HorizontalLayout barraSuperior = new HorizontalLayout(txtBuscar, filtroGridEstado, btnGuardar, btnCancelarEdicion);
+        HorizontalLayout barraSuperior = new HorizontalLayout(txtBuscar, filtroGridEstado, btnGuardar,
+                btnCancelarEdicion);
         barraSuperior.setDefaultVerticalComponentAlignment(Alignment.END);
 
         add(formulario, barraSuperior);
@@ -135,6 +141,8 @@ public class TareasView extends VerticalLayout {
         gridTareas.addColumn(t -> t.prioridad).setHeader("Prioridad");
         gridTareas.addColumn(t -> t.estado).setHeader("Estado");
 
+        // Prepara el formulario superior para modificar la tarea seleccionada, sirve
+        // para cumplir con la parte de actualizar y editar en el proyectoD
         gridTareas.addComponentColumn(tarea -> {
             Button btnEditar = new Button("Editar");
             btnEditar.addClickListener(e -> {
@@ -145,10 +153,11 @@ public class TareasView extends VerticalLayout {
                 selectPrioridad.setValue(tarea.prioridad);
 
                 for (Proyecto p : listaProyectos) {
-                    if (p.id == tarea.idProyecto) selectProyecto.setValue(p);
-                    }
-                    btnGuardar.setText("Actualizar");
-                    btnCancelarEdicion.setVisible(true);
+                    if (p.id == tarea.idProyecto)
+                        selectProyecto.setValue(p);
+                }
+                btnGuardar.setText("Actualizar");
+                btnCancelarEdicion.setVisible(true);
             });
             return btnEditar;
         });
@@ -162,15 +171,16 @@ public class TareasView extends VerticalLayout {
         add(gridTareas);
     }
 
+    // Hago uso de Java Streams para filtrar el Grid evaluando simultáneamente el texto ingresado y el Select de estado
     public void filtrarGrid(String texto, String estadoFiltro) {
         String t = (texto == null) ? "" : texto.toLowerCase();
-        
-            List<Tarea> filtradas = listaTareas.stream()
-                    .filter(tarea -> tarea.titulo.toLowerCase().contains(t))
-                    .filter(tarea -> estadoFiltro.equals("Todos") || tarea.estado.equals(estadoFiltro))
-                    .collect(Collectors.toList());
-            gridTareas.setItems(filtradas);
-        }
+
+        List<Tarea> filtradas = listaTareas.stream()
+                .filter(tarea -> tarea.titulo.toLowerCase().contains(t))
+                .filter(tarea -> estadoFiltro.equals("Todos") || tarea.estado.equals(estadoFiltro))
+                .collect(Collectors.toList());
+        gridTareas.setItems(filtradas);
+    }
 
     public void abrirDialogoConfirmacion(Tarea t) {
         Dialog dialogo = new Dialog();
