@@ -17,6 +17,8 @@ public class GestorArchivos {
     public static String archivoComentarios = "comentarios.txt";
     public static String archivoSubtareas = "subtareas.txt";
 
+    // Sirve para cumplir el requisito de crear datos de ejemplo la primera vez que
+    // corre la app sin requerir bases de datos externas
     public static void inicializarDatos() {
         File fProyectos = new File(archivoProyectos);
         File fTareas = new File(archivoTareas);
@@ -42,6 +44,8 @@ public class GestorArchivos {
         }
     }
 
+    // Lee el archivo de las tareas, separando cada una con "|", y el try interno
+    // hace que si una línea falla, el programa la salte y continúe leyendo
     public static List<Tarea> leerTareas() {
         List<Tarea> lista = new ArrayList<>();
 
@@ -158,6 +162,9 @@ public class GestorArchivos {
     }
 
     public static void agregarComentario(Comentario c) {
+
+        // El modo append = true hace que el programa pueda guardar comentarios nuevos
+        // al final del archivo, sin borrar los que ya estaban ahí
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(archivoComentarios, true)))) {
             out.println(c.idTarea + "|" + c.fecha.toString() + "|" + c.texto);
         } catch (IOException e) {
